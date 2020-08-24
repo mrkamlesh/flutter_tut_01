@@ -58,49 +58,55 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text("My First App"), //widget.title
       ),
-      body: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Icon(Icons.account_circle, size: 50,),
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    "Flutter McFlutter",
-                    style: Theme.of(context).textTheme.headline5,
-                  ),
-                  Text('Experienced App Developer')
-                ],
-              )
-            ],
+      body: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: <Widget>[
+          Expanded(
+            child: Container(
+              width: double.infinity,
+              height: 100,
+              color: Colors.red,
+            ),
           ),
-          SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('123 Main Street'),
-              Text('432-456-1234')
-            ],
+          Expanded(
+            child: ContainerWidget(colorName: Colors.blue),
           ),
-          SizedBox(height: 16),
-          Row(
-              children: <Widget> [
-                Container(
-                  width: 100,
-                  height: 100,
-                  child: Image.network('https://urlzs.com/RsqCz'),
-                )
-              ]
+          Expanded(
+            child: ContainerWidget(colorName: Colors.green),
           ),
         ],
       ),
+      drawer: Drawer(
+        child: ListView(
+          children: <Widget> [
+            DrawerHeader(
+              child: Text("Welcome User123"),
+              decoration: BoxDecoration(color: Colors.blue),
+            ),
+
+            ListTile(
+              title: Text("Menu list 1"),
+            ),
+            ListTile(
+              title: Text("Menu list 2"),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class ContainerWidget extends StatelessWidget {
+  const ContainerWidget({Key key, this.colorName}) : super(key: key, );
+  final Color colorName;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      height: 100,
+      color: this.colorName,
     );
   }
 }
