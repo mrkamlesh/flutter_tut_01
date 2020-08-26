@@ -1,5 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'package:http/http.dart';
+import 'package:http/http.dart' as http;
 
 
 void main() {
@@ -55,6 +57,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyListPageState extends State<MyHomePage> {
   static final showGrid = false; // Set to false to show ListView
+  var users = new List<User>();
 
   @override
   Widget build(BuildContext context) {
@@ -63,11 +66,25 @@ class _MyListPageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text("My List App"),
       ),
-      body: Center(child: _buildList()), //body: Center(child: showGrid ? _buildGrid() : _buildList()),
+      body: ListView.builder(
+        itemCount: users.length,
+        itemBuilder: (context, index){
+          return ListTile(
+            title: Text("Hello: "+users[index].name),
+            subtitle: Text(users[index].email),
+            onTap: () {
+              Navigator.push(context,
+              MaterialPageRoute(
+                builder: (context) => DetailsScreen(user: users[index])
+              )
+            );
+            },
+          );
+        })
     );
   }
 
-
+// body: Center(child: _buildList()), //body: Center(child: showGrid ? _buildGrid() : _buildList()),
   Widget _buildGrid() => GridView.extent(
     maxCrossAxisExtent: 150,
     mainAxisSpacing: 4,
@@ -111,6 +128,24 @@ class _MyListPageState extends State<MyHomePage> {
   List<Container> _buildGridTitleList(int count) => List.generate(count, (index) =>
       Container(child: Image.asset("images/pic$index.jpg"),)
   );
+
+  _getUsers() {
+    API.getUsers().then((response) {
+      setState(() {
+        Iterable list = json.decode(response.body);
+        users = list.map((model) => User.formJson(model)).toList();
+      });
+  });
+  }
+
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+    _getUsers();
+  }
 
 }
 
@@ -250,5 +285,56 @@ class ContainerWidget extends StatelessWidget {
 class CustomFontStyle {
   static TextStyle textPrimary() {
     return TextStyle(fontSize: 16, color: Colors.blue, fontWeight: FontWeight.bold, fontStyle: FontStyle.italic);
+  }
+}
+
+class User {
+  int id;
+  String name;
+  String email;
+
+
+  User(int id, String name, String email) {
+    this.id = id;
+    this.name = name;
+    this.email = email;
+  }
+
+  User.formJson(Map json)
+    : id = json['id'],
+      name = json['name'],
+      email = json['email'];
+
+  Map json() {
+    return { 'id': id, 'name': name, 'email': email };
+  }
+
+}
+
+const baseURL = 'https://jsonplaceholder.typicode.com';
+
+class API {
+  static Future getUsers() {
+    var url = baseURL + '/users';
+    return http.get(url);
+  }
+}
+
+class DetailsScreen extends StatelessWidget {
+  final User user;
+
+  DetailsScreen({Key key, @required this.user})  : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(user.name),
+      ),
+      body: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Text(user.email),
+      ),
+    );
   }
 }
