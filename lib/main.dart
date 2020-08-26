@@ -1,4 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+
 
 void main() {
   runApp(MyApp());
@@ -9,7 +13,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'My Flutter',
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -26,7 +30,7 @@ class MyApp extends StatelessWidget {
         // closer together (more dense) than on mobile platforms.
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      home: MyHomePage(title: 'My Flutter Home Page'),
     );
   }
 }
@@ -46,82 +50,291 @@ class MyHomePage extends StatefulWidget {
   final String title;
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+//  _MyHomePageState createState() => _MyHomePageState();
+  _MyListPageState createState() => _MyListPageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
 
-  void _incrementCounter() {
-    setState(() {
-
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
+class _MyListPageState extends State<MyHomePage> {
+  static final showGrid = false; // Set to false to show ListView
+  var users = new List<User>();
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
+    // TODO: implement build
     return Scaffold(
       appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
+        title: Text("My List App"),
+      ),
+      body: ListView.builder(
+        itemCount: users.length,
+        itemBuilder: (context, index){
+          return ListTile(
+            title: Text("Hello: "+users[index].name),
+            subtitle: Text(users[index].email),
+            onTap: () {
+              Navigator.push(context,
+              MaterialPageRoute(
+                builder: (context) => DetailsScreen(user: users[index])
+              )
+            );
+            },
+          );
+        })
+    );
+  }
+
+// body: Center(child: _buildList()), //body: Center(child: showGrid ? _buildGrid() : _buildList()),
+  Widget _buildGrid() => GridView.extent(
+    maxCrossAxisExtent: 150,
+    mainAxisSpacing: 4,
+    crossAxisSpacing: 4,
+    padding: const EdgeInsets.all(4),
+    children: _buildGridTitleList(30),
+  );
+
+  // #docregion list
+  Widget _buildList() => ListView(
+    children: [
+      _tile('CineArts at the Empire', '85 W Portal Ave', Icons.theaters),
+      _tile('The Castro Theater', '429 Castro St', Icons.theaters),
+      _tile('Alamo Drafthouse Cinema', '2550 Mission St', Icons.theaters),
+      _tile('Roxie Theater', '3117 16th St', Icons.theaters),
+      _tile('United Artists Stonestown Twin', '501 Buckingham Way',
+          Icons.theaters),
+      _tile('AMC Metreon 16', '135 4th St #3000', Icons.theaters),
+      Divider(),
+      _tile('Kescaped_code#39;s Kitchen', '757 Monterey Blvd', Icons.restaurant),
+      _tile('Emmyescaped_code#39;s Restaurant', '1923 Ocean Ave', Icons.restaurant),
+      _tile(
+          'Chaiya Thai Restaurant', '272 Claremont Blvd', Icons.restaurant),
+      _tile('La Ciccia', '291 30th St', Icons.restaurant),
+    ],
+  );
+
+  ListTile _tile(String title, String subtitle, IconData icon) => ListTile(
+    title: Text(title,
+        style: TextStyle(
+          fontWeight: FontWeight.w500,
+          fontSize: 20,
+        )),
+    subtitle: Text(subtitle),
+    leading: Icon(
+      icon,
+      color: Colors.blue[500],
+    ),
+  );
+
+  List<Container> _buildGridTitleList(int count) => List.generate(count, (index) =>
+      Container(child: Image.asset("images/pic$index.jpg"),)
+  );
+
+  _getUsers() {
+    API.getUsers().then((response) {
+      setState(() {
+        Iterable list = json.decode(response.body);
+        users = list.map((model) => User.formJson(model)).toList();
+      });
+  });
+  }
+
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+    _getUsers();
+  }
+
+}
+
+
+class _MyHomePageState extends State<MyHomePage> {
+
+  @override
+  Widget build(BuildContext context) {
+
+    return Scaffold(
+      appBar: AppBar(
         title: Text("My First App"), //widget.title
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
+      body: Container(
+        padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+        margin: EdgeInsets.all(2.5),
+        width: double.infinity,
         child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
           mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Image.network("https://helpx.adobe.com/content/dam/help/en/stock/how-to/visual-reverse-image-search-v2_297x176.jpg", alignment: AlignmentDirectional.center),
-            Text("Satya Kumari",
-        style: TextStyle(fontSize: 25, color: Colors.deepPurple, fontWeight: FontWeight.bold),),
-            Text("Shivam Kumar",
-              style: TextStyle(fontSize: 25, color: Colors.deepPurple, fontWeight: FontWeight.bold),),
-            Text("Kamlesh & Chandni",
-              textAlign: TextAlign.end,
-              style: TextStyle(fontSize: 25, color: Colors.deepPurple, fontWeight: FontWeight.bold),
+          children:<Widget> [
+            Text("Text1"),
+            Text("Text2"),
+            Card(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget> [
+                  ListTile(
+                      title: Text("ABC", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),)
+                  ),
+                  Divider(color: Colors.black12,),
+                  ListTile(
+                    title: Text("EFG", style: CustomFontStyle.textPrimary(),),
+                  ),
+                ],
+              ),
             ),
-            Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline2,
-            ),
+//            Stack(
+//              alignment: const Alignment(0.6, 0.8),
+//              children: <Widget>[
+//                Container(
+//                  height: 200,
+//                  width: 200,
+//                  color: Colors.blue,
+//                ),
+//                Container(
+//                  height: 150,
+//                  width: 150,
+//                  color: Colors.white24,
+//                ),
+//                Container(
+//                  decoration: BoxDecoration(
+//                    color: Colors.black45,
+//                  ),
+//                  child: Text(
+//                    "Hello Sonali",
+//                    style: TextStyle(
+//                        fontSize: 20,
+//                        color: Colors.white,
+//                        fontWeight: FontWeight.bold
+//                    ),
+//                  ),
+//                )
+//              ],
+//            ),
+            SizedBox(
+              height: 210,
+              child: Card(
+                child: Column(
+                  children: [
+                    ListTile(
+                      title: Text("1625 Main Street",
+                        style: TextStyle(fontWeight: FontWeight.w500),),
+                      subtitle: Text("My City, CA 99820"),
+                      leading: Icon(
+                        Icons.restaurant_menu,
+                        color: Colors.blue[500]
+                      ),
+                    ),
+                    Divider(color: Colors.black12,),
+                    ListTile(
+                      title: Text("(423)382-9232",
+                      style: TextStyle(
+                        fontWeight: FontWeight.w500
+                      ),),
+                      leading: Icon(
+                        Icons.contact_phone,
+                        color: Colors.blue[500],
+                      ),
+                    ),
+                    ListTile(
+                      title: Text("contact@myresturant.com", style: TextStyle(fontWeight: FontWeight.w500),),
+                      leading: Icon(Icons.email, color: Colors.blue[500],),
+                    )
+                  ],
+                ),
+              ),
+            )
+
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      drawer: Drawer(
+        child: ListView(
+          children: <Widget> [
+            DrawerHeader(
+              child: Text("Welcome User123"),
+              decoration: BoxDecoration(color: Colors.blue),
+            ),
+
+            ListTile(
+              title: Text("Menu list 1"),
+            ),
+            ListTile(
+              title: Text("Menu list 2"),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class ContainerWidget extends StatelessWidget {
+  const ContainerWidget({Key key, this.colorName}) : super(key: key, );
+  final Color colorName;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      height: 100,
+      color: this.colorName,
+    );
+  }
+}
+
+class CustomFontStyle {
+  static TextStyle textPrimary() {
+    return TextStyle(fontSize: 16, color: Colors.blue, fontWeight: FontWeight.bold, fontStyle: FontStyle.italic);
+  }
+}
+
+class User {
+  int id;
+  String name;
+  String email;
+
+
+  User(int id, String name, String email) {
+    this.id = id;
+    this.name = name;
+    this.email = email;
+  }
+
+  User.formJson(Map json)
+    : id = json['id'],
+      name = json['name'],
+      email = json['email'];
+
+  Map json() {
+    return { 'id': id, 'name': name, 'email': email };
+  }
+
+}
+
+const baseURL = 'https://jsonplaceholder.typicode.com';
+
+class API {
+  static Future getUsers() {
+    var url = baseURL + '/users';
+    return http.get(url);
+  }
+}
+
+class DetailsScreen extends StatelessWidget {
+  final User user;
+
+  DetailsScreen({Key key, @required this.user})  : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(user.name),
+      ),
+      body: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Text(user.email),
+      ),
     );
   }
 }
